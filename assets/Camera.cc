@@ -26,7 +26,7 @@ Matrix4f Camera::get_V() {
   V_.block<3, 1>(0, 0) << right_;
   V_.block<3, 1>(0, 1) << up_;
   V_.block<3, 1>(0, 2) << front_;
-  V_.block<3, 1>(3, 0) << position_;
+  V_.block<3, 1>(0, 3) << position_;
   V_ << V_.inverse();
   return V_;
 };

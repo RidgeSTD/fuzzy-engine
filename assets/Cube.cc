@@ -14,7 +14,7 @@ Cube::Cube(Vector3f position, Vector3f rotation, Vector3f size) {
   size_ = size;
 };
 
-Vector3f *Cube::get_vertices() {
+Vector3f* Cube::get_vertices() {
   for (size_t i = 0; i < 8; i++) {
     vertices_[i] = position_ + vertices_offsets_[i].cwiseProduct(size_);
   }
@@ -22,4 +22,4 @@ Vector3f *Cube::get_vertices() {
   return vertices_;
 }
 
-int get_num_vertices() { return 8; }
+int Cube::get_num_vertices() { return 8; }

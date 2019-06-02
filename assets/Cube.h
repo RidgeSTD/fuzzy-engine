@@ -9,7 +9,7 @@ public:
   Cube();
   Cube(Eigen::Vector3f position, Eigen::Vector3f rotation,
        Eigen::Vector3f size);
-  Eigen::Vector3f *get_vertices();
+  Eigen::Vector3f* get_vertices();
   int get_num_vertices();
 
 private:
