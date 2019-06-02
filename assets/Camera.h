@@ -5,7 +5,7 @@
 
 class Camera {
 public:
-  Vector3 position, front, up, right;
+  Eigen::Vector3f position, front, up, right;
   float fov, far, near;
   Camera();
 };

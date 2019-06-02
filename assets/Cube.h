@@ -2,10 +2,11 @@
 #define CUBE_H
 #include "core.h"
 
+
 class Cube {
 public:
-  Vector3 position, rotation, size;
+  Eigen::Vector3f position, rotation, size;
   Cube();
-  Cube(Vector3 _position, Vector3 _rotation, Vector3 _size);
+  Cube(Eigen::Vector3f _position, Eigen::Vector3f _rotation, Eigen::Vector3f _size);
 };
 #endif // CUBE_H

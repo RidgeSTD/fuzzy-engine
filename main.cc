@@ -1,7 +1,5 @@
 #include <math.h>
 #include <stdio.h>
-#include <Eigen/Dense>
-#include <iostream>
 
 #include "include/svpng.inc"
 #include "assets/Camera.h"
@@ -11,7 +9,6 @@
 #define W 512
 #define H 512
 
-using Eigen::MatrixXd;
 
 unsigned char img[W * H * 3];
 
@@ -33,13 +30,5 @@ int main(int argc, char *argv[]) {
 
   delete (cube);
 
-  printf("eigen part starts\n");
-  MatrixXd m(2,2);
-  m(0,0) = 3;
-  m(1,0) = 2.5;
-  m(0,1) = -1;
-  m(1,1) = m(1,0) + m(0,1);
-  std::cout << m << std::endl;
-  printf("eigen part ends\n");
   return 0;
 }
