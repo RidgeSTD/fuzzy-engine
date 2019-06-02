@@ -3,13 +3,13 @@
 using namespace Eigen;
 
 Cube::Cube() {
-  position = Vector3f();
-  rotation = Vector3f();
-  size = Vector3f();
+  position_ = Vector3f();
+  rotation_ = Vector3f();
+  size_ = Vector3f();
 };
 
-Cube::Cube(Vector3f _position, Vector3f _rotation, Vector3f _size) {
-  position = _position;
-  rotation = _rotation;
-  size = _size;
+Cube::Cube(Vector3f position, Vector3f rotation, Vector3f size) {
+  position_ = position;
+  rotation_ = rotation;
+  size_ = size;
 };
