@@ -6,12 +6,14 @@
 class Cube : public Object3D {
 public:
 	Eigen::Vector3f position_, rotation_, size_;
+	Eigen::Quaternion<float> rotation_quaternion_;
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	Cube();
 	Cube(Eigen::Vector3f position, Eigen::Vector3f rotation,
 		Eigen::Vector3f size);
 	Eigen::Vector3f* get_vertices();
 	int get_num_vertices();
+	bool set_rotation(Eigen::Vector3f new_euler_rotation);
 
 private:
 	Eigen::Vector3f vertices_[8];

@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 #include <iostream>
 #include <math.h>
 #include <stdio.h>
@@ -32,6 +34,7 @@ int main(int argc, char *argv[]) {
   Cube *cube = new Cube();
   cube->size_ = Vector3f(100, 80, 100);
   scene[0] = cube;
+  cube->set_rotation(Vector3f(M_PI / 4, M_PI / 4, 0));
 
   Camera *camera = new Camera();
 
