@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
   Object3D *scene[1];
 
   Cube *cube = new Cube();
-  cube->size_ = Vector3f(5, 5, 5);
+  cube->size_ = Vector3f(100, 80, 100);
   scene[0] = cube;
 
   Camera *camera = new Camera();
@@ -64,19 +64,26 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
   printf("draw background finished!\n");
 
   // =========================== VERTEX SHADER ===========================
+  printf("vertices are in model coordinate as follows:\n");
+  for (size_t i = 0; i < num_vertices; i++)
+  {
+	  std::cout << vertices[i] << std::endl;
+  }
   Matrix4f V = camera->get_V();
+  printf("The vertices are transformed to view coordinate as follows:\n");
   for (size_t i = 0; i < num_vertices; i++) {
     vertices[i] =
         (V * Vector4f(vertices[i].x(), vertices[i].y(), vertices[i].z(), 1.f))
             .block<3, 1>(0, 0);
+	std::cout << vertices[i] << std::endl;
+
   }
 
-  std::cout << vertices << std::endl;
   printf("vertex shader finished!\n");
 
   // ================ PRIMITIVE ASSEMBLY and TESSELATION SHADER
   // ================== fake tesselation for cube
-  size_t tesselation_idx[14] = {1, 2, 3, 6, 7, 5, 8, 4, 3, 7, 6, 5, 2, 1};
+  size_t tesselation_idx[14] = {3, 2, 6, 7, 4, 2, 0, 3, 1, 6, 5, 4, 1, 0};
 
   // GEOMETRY SHADER
   // here we have nothing to do
@@ -115,8 +122,8 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
       std::swap(up, down);
     }
     printf("start scanning pixelwise...\n");
-    std::cout << "scanning range:[" << (int)vertices[down].y() << ", " << (int)vertices[up].y() << "]" << std::endl;
-    for (int v = (int)(vertices[down].y() + 0.5); v < (int)(vertices[up].y()); v++) {
+    std::cout << "scanning range:[" << floor(vertices[down].y()) << ", " << floor(vertices[up].y()) << "]" << std::endl;
+    for (int v = floor(vertices[down].y() + 0.5); v < floor(vertices[up].y()); v++) {
       min = MAX;
       max = -MAX;
       x = CalculateXWithPoints(vertices[left], vertices[up], v);
@@ -136,9 +143,9 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
       }
 
       printf("start scaning horizontal...\n");
-    std::cout << "scanning range:[" << min << ", " << max << "]" << std::endl;
+	std::cout << "scanning range:[" << floor(min) << ", " << floor(max) << "]" << std::endl;
 
-      for (int u = min; u < max; u++) {
+      for (int u = floor(min); u < floor(max); u++) {
         FragmentInformation fi;
         fi.u = u;
         fi.v = v;
@@ -163,6 +170,7 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
     }
     p = buffer + (v * W + u) * 3;
     p[0] = (int)((float)f.primitive_idx / 14.f * 255);
+	p[1] = 255;
   }
 
   printf("fragment shader finished!\n");
