@@ -5,6 +5,7 @@ using namespace Eigen;
 Cube::Cube() {
   position_ = Vector3f(0, 0, 0);
   rotation_ = Vector3f(0, 0, 0);
+  rotation_quaternion_ = Quaternion<float>(1, 0, 0, 0);
   size_ = Vector3f(1, 1, 1);
 };
 
