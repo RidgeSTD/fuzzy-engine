@@ -18,9 +18,9 @@ public:
 private:
 	Eigen::Vector3f vertices_[8];
 	Eigen::Vector3f vertices_offsets_[8] = {
-	Eigen::Vector3f(-0.5, -0.5, 0.5),  Eigen::Vector3f(-0.5, 0.5, 0.5),
-	Eigen::Vector3f(0.5, 0.5, 0.5),    Eigen::Vector3f(0.5, -0.5, 0.5),
-	Eigen::Vector3f(-0.5, -0.5, -0.5), Eigen::Vector3f(-0.5, 0.5, -0.5),
-	Eigen::Vector3f(0.5, 0.5, -0.5),   Eigen::Vector3f(0.5, -0.5, -0.5)};
+	Eigen::Vector3f(-0.5, 0.5, -0.5),  Eigen::Vector3f(-0.5, -0.5, -0.5),
+	Eigen::Vector3f(-0.5, 0.5, 0.5),    Eigen::Vector3f(-0.5, -0.5, 0.5),
+	Eigen::Vector3f(0.5, 0.5, -0.5), Eigen::Vector3f(0.5, -0.5, -0.5),
+	Eigen::Vector3f(0.5, -0.5, 0.5),   Eigen::Vector3f(0.5, 0.5, 0.5)};
 };
 #endif // CUBE_H

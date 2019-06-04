@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 	Cube *cube = new Cube();
 	cube->size_ = Vector3f(300, 80, 100);
 	scene[0] = cube;
-	//cube->set_rotation(Vector3f(M_PI / 4, M_PI / 8, 0));
+	cube->set_rotation(Vector3f(M_PI / 4, M_PI / 8, 0));
 
 	Camera *camera = new Camera();
 
