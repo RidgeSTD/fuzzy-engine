@@ -34,13 +34,17 @@ int main(int argc, char *argv[]) {
 	Object3D *scene[1];
 
 	Cube *cube = new Cube();
-	cube->size_ = Vector3f(300, 80, 100);
+	cube->size_ = Vector3f(20, 20, 20);
 	scene[0] = cube;
-	cube->set_rotation(Vector3f(M_PI / 4, M_PI / 8, 0));
+	//cube->set_rotation(Vector3f(M_PI / 4, M_PI / 8, 0));
 
 	Camera *camera = new Camera();
 
-	camera->position_ = Vector3f(0, 0, -5);
+	camera->position_ = Vector3f(0, 0, -200);
+	Quaternion<float> q = AngleAxisf(M_PI / 3, Vector3f::UnitX())
+		* AngleAxisf(-M_PI / 4, Vector3f::UnitY())
+		* AngleAxisf(M_PI / 3, Vector3f::UnitZ());
+	camera->rotate(q.matrix());
 
 	printf("start render...\n");
 
@@ -79,7 +83,7 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 	for (size_t i = 0; i < num_vertices; i++) {
 		vertices[i] =
 			(V * Vector4f(vertices[i].x(), vertices[i].y(), vertices[i].z(), 1.f))
-			.block<3, 1>(0, 0);
+			.head(3);
 		std::cout << vertices[i] << std::endl;
 
 	}
