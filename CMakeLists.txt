@@ -9,8 +9,8 @@ find_package(Eigen3)
 include_directories("${EIGEN3_INCLUDE_DIR}")
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
-include_directories("${PROJECT_SOURCE_DIR}/assets")
-add_subdirectory(assets)
+include_directories("${PROJECT_SOURCE_DIR}/core")
+add_subdirectory(core)
 
 
 add_executable(FuzzyE main.cc)

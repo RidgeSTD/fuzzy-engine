@@ -7,11 +7,12 @@
 #include <set>
 #include <time.h>
 
-#include "assets/Camera.h"
-#include "assets/Cube.h"
-#include "assets/Object3D.h"
-#include "assets/core.h"
+#include "core/Camera.h"
+#include "core/Cube.h"
+#include "core/Object3D.h"
+#include "core/common_include.h"
 #include "include/svpng.inc"
+#include "include/igl/readOBJ.h"
 
 #define W 512
 #define H 512
@@ -21,29 +22,29 @@ using namespace Eigen;
 
 unsigned char img[W * H * 3];
 bool RunRenderPipeline(Camera *camera, Object3D **objects,
-	unsigned char *buffer);
+					   unsigned char *buffer);
 float CalculateXWithPoints(Vector3f p1, Vector3f p2, float y);
 
-struct FragmentInformation {
+struct FragmentInformation
+{
 	// Vector3f position;
 	int u, v;
 	int primitive_idx; // for coloring
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	Object3D *scene[1];
 
 	Cube *cube = new Cube();
-	cube->size_ = Vector3f(20, 20, 20);
+	cube->set_scale(Vector3f(20, 20, 20));
 	scene[0] = cube;
-	//cube->set_rotation(Vector3f(M_PI / 4, M_PI / 8, 0));
+	cube->set_rotation(Vector3f(M_PI / 4, M_PI / 8, 0));
 
 	Camera *camera = new Camera();
 
 	camera->position_ = Vector3f(0, 0, -200);
-	Quaternion<float> q = AngleAxisf(M_PI / 3, Vector3f::UnitX())
-		* AngleAxisf(-M_PI / 4, Vector3f::UnitY())
-		* AngleAxisf(M_PI / 3, Vector3f::UnitZ());
+	Quaternion<float> q = AngleAxisf(M_PI / 3, Vector3f::UnitX()) * AngleAxisf(-M_PI / 4, Vector3f::UnitY()) * AngleAxisf(M_PI / 3, Vector3f::UnitZ());
 	camera->rotate(q.matrix());
 
 	printf("start render...\n");
@@ -58,15 +59,19 @@ int main(int argc, char *argv[]) {
 }
 
 bool RunRenderPipeline(Camera *camera, Object3D **objects,
-	unsigned char *buffer) {
+					   unsigned char *buffer)
+{
 	unsigned char *p = buffer;
 
-	Vector3f *vertices = objects[0]->get_vertices();
+	MatrixXf vertices = objects[0]->get_vertices();
+	vertices.row(0);
 	int num_vertices = objects[0]->get_num_vertices();
 
 	// =========================== DRAW BACKGROUND ===========================
-	for (int y = 0; y < H; y++) {
-		for (int x = 0; x < W; x++, p += 3) {
+	for (int y = 0; y < H; y++)
+	{
+		for (int x = 0; x < W; x++, p += 3)
+		{
 			p[0] = p[1] = p[2] = 0;
 		}
 	}
@@ -76,25 +81,29 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 	printf("vertices are in model coordinate as follows:\n");
 	for (size_t i = 0; i < num_vertices; i++)
 	{
-		std::cout << vertices[i] << std::endl;
+		std::cout << vertices.row(i) << std::endl;
 	}
 	Matrix4f V = camera->get_V();
 	printf("The vertices are transformed to view coordinate as follows:\n");
-	for (size_t i = 0; i < num_vertices; i++) {
-		vertices[i] =
-			(V * Vector4f(vertices[i].x(), vertices[i].y(), vertices[i].z(), 1.f))
-			.head(3);
-		std::cout << vertices[i] << std::endl;
-
+	{
+		Vector4f _v;
+		Vector3f _v3;
+		for (size_t i = 0; i < num_vertices; i++)
+		{
+			_v3 = vertices.row(i);
+			_v << _v3, 1.f;
+			vertices.row(i) = (V * _v).head(3);
+			std::cout << vertices.row(i) << std::endl;
+		}
 	}
 
 	printf("vertex shader finished!\n");
 
-	// ================ PRIMITIVE ASSEMBLY and TESSELATION SHADER
-	// ================== fake tesselation for cube
-	size_t tesselation_idx[14] = { 3, 2, 6, 7, 4, 2, 0, 3, 1, 6, 5, 4, 1, 0 };
+	// ================ PRIMITIVE ASSEMBLY and TESSELATION SHADER ================
+	// fake tesselation for cube
+	size_t tesselation_idx[14] = {3, 2, 6, 7, 4, 2, 0, 3, 1, 6, 5, 4, 1, 0};
 
-	// GEOMETRY SHADER
+	// ================ GEOMETRY SHADER ================
 	// here we have nothing to do
 
 	// =========================== RESTERIZATION ===========================
@@ -108,24 +117,26 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 	float min_y = MAX, max_y = -MAX;
 	float min_x = MAX, max_x = -MAX;
 
-	for (size_t i = 2; i < 14; i++) {
-
-		triangle[0] = vertices[tesselation_idx[i - 2]];
-		triangle[1] = vertices[tesselation_idx[i - 1]];
-		triangle[2] = vertices[tesselation_idx[i]];
+	for (size_t i = 2; i < 14; i++)
+	{
+		triangle[0] = Vector3f(vertices.row(tesselation_idx[i - 2]));
+		triangle[1] = Vector3f(vertices.row(tesselation_idx[i - 1]));
+		triangle[2] = Vector3f(vertices.row(tesselation_idx[i]));
 
 		for (size_t j = 0; j < 3; j++)
 		{
 			for (size_t k = j + 1; k < 3; k++)
 			{
-				if (triangle[j].x() > triangle[k].x()) {
+				if (triangle[j].x() > triangle[k].x())
+				{
 					std::swap(triangle[j], triangle[k]);
 				}
 			}
 		}
 
 		float x, y;
-		for (size_t j = 0; j <= 2; j++) {
+		for (size_t j = 0; j <= 2; j++)
+		{
 
 			y = triangle[j].y();
 			min_y = fmin(y, min_y);
@@ -133,32 +144,38 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 		}
 		printf("start scanning pixelwise vertically...\n");
 		std::cout << "scanning range:[" << floor(min_y) << ", " << floor(max_y) << "]" << std::endl;
-		for (int v = floor(min_y); v < floor(max_y); v++) {
+		for (int v = floor(min_y); v < floor(max_y); v++)
+		{
 			min_x = MAX;
 			max_x = -MAX;
 			x = CalculateXWithPoints(triangle[0], triangle[1], v);
-			if (x >= triangle[0].x() && x <= triangle[1].x()) {
+			if (x >= triangle[0].x() && x <= triangle[1].x())
+			{
 				min_x = fmin(min_x, x);
 				max_x = fmax(max_x, x);
 			}
 			x = CalculateXWithPoints(triangle[1], triangle[2], v);
-			if (x >= triangle[1].x() && x <= triangle[2].x()) {
+			if (x >= triangle[1].x() && x <= triangle[2].x())
+			{
 				min_x = fmin(min_x, x);
 				max_x = fmax(max_x, x);
 			}
 			x = CalculateXWithPoints(triangle[0], triangle[2], v);
-			if (x >= triangle[0].x() && x <= triangle[2].x()) {
+			if (x >= triangle[0].x() && x <= triangle[2].x())
+			{
 				min_x = fmin(min_x, x);
 				max_x = fmax(max_x, x);
 			}
 
-			if (min_x == MAX || max_x == -MAX) {
+			if (min_x == MAX || max_x == -MAX)
+			{
 				continue;
 			}
 			printf("start scaning pixelwise horizontally...\n");
 			std::cout << "scanning range:[" << floor(min_x) << ", " << floor(max_x) << "]" << std::endl;
 
-			for (int u = floor(min_x); u < floor(max_x); u++) {
+			for (int u = floor(min_x); u < floor(max_x); u++)
+			{
 				primitive_set.insert(i);
 				FragmentInformation fi;
 				fi.u = u;
@@ -171,7 +188,8 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 	}
 	printf("resterization finished!\n");
 	printf("following primitives are resterized\n");
-	for (std::set<int>::iterator it = primitive_set.begin(); it != primitive_set.end(); it++) {
+	for (std::set<int>::iterator it = primitive_set.begin(); it != primitive_set.end(); it++)
+	{
 		std::cout << *it << " ";
 	}
 	std::cout << std::endl;
@@ -188,11 +206,13 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 		col[i] = rand() % 256;
 	}
 	int col_idx;
-	for (size_t i = 0; i < fragments.size(); i++) {
+	for (size_t i = 0; i < fragments.size(); i++)
+	{
 		f = fragments[i];
 		u = f.u + W / 2;
 		v = f.v + H / 2;
-		if (u < 0 || u >= W || v < 0 || v >= H) {
+		if (u < 0 || u >= W || v < 0 || v >= H)
+		{
 			continue;
 		}
 		p = buffer + (v * W + u) * 3;
@@ -207,7 +227,8 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 	return true;
 }
 
-float CalculateXWithPoints(Vector3f p1, Vector3f p2, float y) {
+float CalculateXWithPoints(Vector3f p1, Vector3f p2, float y)
+{
 	if (abs((p2.y() - p1.y())) < 0.0000001)
 		return MAX;
 	return p2.x() - (p2.x() - p1.x()) / (p2.y() - p1.y()) * (p2.y() - y);
