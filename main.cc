@@ -37,17 +37,18 @@ int main(int argc, char *argv[])
 {
 	Object3D *scene[1];
 
-	ArbitraryObject3D* obj = new ArbitraryObject3D("assets\\cube.obj");
-	obj->set_scale(Vector3f(100, 100, 100));
+	ArbitraryObject3D* obj = new ArbitraryObject3D("assets\\stanford_bunny.obj");
+	obj->set_scale(Vector3f(1500, 1500, 1500));
 	scene[0] = obj;
-	obj->set_rotation(Vector3f(M_PI / 4, M_PI / 8, 0));
+	obj->set_position(Vector3f(0, 200, 0));
+	obj->set_rotation(Vector3f(0, 0, M_PI));
 
 
 	Camera *camera = new Camera();
 
-	camera->position_ = Vector3f(0, 0, -200);
-	Quaternion<float> q = AngleAxisf(M_PI / 3, Vector3f::UnitX()) * AngleAxisf(-M_PI / 4, Vector3f::UnitY()) * AngleAxisf(M_PI / 3, Vector3f::UnitZ());
-	camera->rotate(q.matrix());
+	camera->position_ = Vector3f(0, 0, -5);
+	//Quaternion<float> q = AngleAxisf(M_PI / 3, Vector3f::UnitX()) * AngleAxisf(-M_PI / 4, Vector3f::UnitY()) * AngleAxisf(M_PI / 3, Vector3f::UnitZ());
+	//camera->rotate(q.matrix());
 
 	printf("start render...\n");
 
@@ -137,8 +138,8 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 			min_y = fmin(y, min_y);
 			max_y = fmax(y, max_y);
 		}
-		printf("start scanning pixelwise vertically...\n");
-		std::cout << "scanning range:[" << floor(min_y) << ", " << floor(max_y) << "]" << std::endl;
+		//printf("start scanning pixelwise vertically...\n");
+		//std::cout << "scanning range:[" << floor(min_y) << ", " << floor(max_y) << "]" << std::endl;
 		for (int v = floor(min_y); v < floor(max_y); v++)
 		{
 			min_x = MAX;
@@ -166,8 +167,8 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 			{
 				continue;
 			}
-			printf("start scaning pixelwise horizontally...\n");
-			std::cout << "scanning range:[" << floor(min_x) << ", " << floor(max_x) << "]" << std::endl;
+			//printf("start scaning pixelwise horizontally...\n");
+			//std::cout << "scanning range:[" << floor(min_x) << ", " << floor(max_x) << "]" << std::endl;
 
 			for (int u = floor(min_x); u < floor(max_x); u++)
 			{
