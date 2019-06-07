@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	Object3D *scene[1];
 
 	Cube *cube = new Cube();
-	cube->set_scale(Vector3f(20, 20, 20));
+	cube->set_scale(Vector3f(100, 100, 50));
 	scene[0] = cube;
 	cube->set_rotation(Vector3f(M_PI / 4, M_PI / 8, 0));
 
@@ -92,7 +92,8 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 		{
 			_v3 = vertices.row(i);
 			_v << _v3, 1.f;
-			vertices.row(i) = (V * _v).head(3);
+			_v3 = (V * _v).head(3);
+			vertices.row(i) = _v3;
 			std::cout << vertices.row(i) << std::endl;
 		}
 	}
