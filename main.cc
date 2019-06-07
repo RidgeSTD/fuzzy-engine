@@ -9,6 +9,7 @@
 
 #include "core/Camera.h"
 #include "core/Cube.h"
+#include "core/ArbitraryObject3D.h"
 #include "core/Object3D.h"
 #include "core/common_include.h"
 #include "include/svpng.inc"
@@ -22,7 +23,7 @@ using namespace Eigen;
 
 unsigned char img[W * H * 3];
 bool RunRenderPipeline(Camera *camera, Object3D **objects,
-					   unsigned char *buffer);
+	unsigned char *buffer);
 float CalculateXWithPoints(Vector3f p1, Vector3f p2, float y);
 
 struct FragmentInformation
@@ -36,10 +37,11 @@ int main(int argc, char *argv[])
 {
 	Object3D *scene[1];
 
-	Cube *cube = new Cube();
-	cube->set_scale(Vector3f(100, 100, 50));
-	scene[0] = cube;
-	cube->set_rotation(Vector3f(M_PI / 4, M_PI / 8, 0));
+	ArbitraryObject3D* obj = new ArbitraryObject3D("assets\\cube.obj");
+	obj->set_scale(Vector3f(100, 100, 100));
+	scene[0] = obj;
+	obj->set_rotation(Vector3f(M_PI / 4, M_PI / 8, 0));
+
 
 	Camera *camera = new Camera();
 
@@ -52,20 +54,16 @@ int main(int argc, char *argv[])
 	RunRenderPipeline(camera, scene, img);
 
 	svpng(fopen("basic.png", "wb"), W, H, img, 0);
-	delete (cube);
+	delete (obj);
 
 	printf("program ended successfully!\n");
 	return 0;
 }
 
 bool RunRenderPipeline(Camera *camera, Object3D **objects,
-					   unsigned char *buffer)
+	unsigned char *buffer)
 {
 	unsigned char *p = buffer;
-
-	MatrixXf vertices = objects[0]->get_vertices();
-	vertices.row(0);
-	int num_vertices = objects[0]->get_num_vertices();
 
 	// =========================== DRAW BACKGROUND ===========================
 	for (int y = 0; y < H; y++)
@@ -78,13 +76,11 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 	printf("draw background finished!\n");
 
 	// =========================== VERTEX SHADER ===========================
-	printf("vertices are in model coordinate as follows:\n");
-	for (size_t i = 0; i < num_vertices; i++)
-	{
-		std::cout << vertices.row(i) << std::endl;
-	}
+	MatrixXf vertices = objects[0]->get_vertices();
+	int num_vertices = objects[0]->get_num_vertices();
+
+	std::cout << num_vertices << "vertices loaded!" << std::endl;
 	Matrix4f V = camera->get_V();
-	printf("The vertices are transformed to view coordinate as follows:\n");
 	{
 		Vector4f _v;
 		Vector3f _v3;
@@ -94,15 +90,14 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 			_v << _v3, 1.f;
 			_v3 = (V * _v).head(3);
 			vertices.row(i) = _v3;
-			std::cout << vertices.row(i) << std::endl;
 		}
 	}
-
+	printf("The vertices are transformed to view coordinate\n");
 	printf("vertex shader finished!\n");
 
 	// ================ PRIMITIVE ASSEMBLY and TESSELATION SHADER ================
 	// fake tesselation for cube
-	size_t tesselation_idx[14] = {3, 2, 6, 7, 4, 2, 0, 3, 1, 6, 5, 4, 1, 0};
+	MatrixXf faces = objects[0]->get_faces();
 
 	// ================ GEOMETRY SHADER ================
 	// here we have nothing to do
@@ -111,18 +106,17 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 
 	printf("resterization started...\n");
 
-	std::set<int> primitive_set;
 	std::vector<FragmentInformation> fragments;
 
 	Vector3f triangle[3];
 	float min_y = MAX, max_y = -MAX;
 	float min_x = MAX, max_x = -MAX;
 
-	for (size_t i = 2; i < 14; i++)
+	for (size_t i = 0; i < faces.rows(); i++)
 	{
-		triangle[0] = Vector3f(vertices.row(tesselation_idx[i - 2]));
-		triangle[1] = Vector3f(vertices.row(tesselation_idx[i - 1]));
-		triangle[2] = Vector3f(vertices.row(tesselation_idx[i]));
+		triangle[0] = Vector3f(vertices.row(faces(i, 0)));
+		triangle[1] = Vector3f(vertices.row(faces(i, 1)));
+		triangle[2] = Vector3f(vertices.row(faces(i, 2)));
 
 		for (size_t j = 0; j < 3; j++)
 		{
@@ -177,7 +171,6 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 
 			for (int u = floor(min_x); u < floor(max_x); u++)
 			{
-				primitive_set.insert(i);
 				FragmentInformation fi;
 				fi.u = u;
 				fi.v = v;
@@ -185,21 +178,15 @@ bool RunRenderPipeline(Camera *camera, Object3D **objects,
 				fragments.push_back(fi);
 			}
 		}
-		std::cout << "primitive " << i << " resterized" << std::endl;
 	}
 	printf("resterization finished!\n");
-	printf("following primitives are resterized\n");
-	for (std::set<int>::iterator it = primitive_set.begin(); it != primitive_set.end(); it++)
-	{
-		std::cout << *it << " ";
-	}
-	std::cout << std::endl;
+
 	// =========================== FRAGMENT SHADER ===========================
 	printf("fragment shader started...\n");
 
 	FragmentInformation f;
 	int u, v;
-	size_t col[36];
+	size_t* col = (size_t*)malloc(sizeof(size_t) * faces.rows() * 3);
 	srand((unsigned)time(NULL));
 	for (size_t i = 0; i < 36; i++)
 	{
